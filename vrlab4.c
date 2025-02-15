@@ -35,7 +35,7 @@ int main() {
 
     char pathname[128];
     logfd = open("log", O_WRONLY|O_CREAT|O_TRUNC, 0644);
-    myinput = fopen("myinput", "r");
+    myinput = fopen("myinput", "w");
     myNum = 18;
     getcwd(pathname, 128);
     strcat(pathname, "/foo");
@@ -64,7 +64,7 @@ int main() {
             if (received > 0) {
                 write(logfd, buf, strlen(buf));
                 memset(buf, 0, 100);
-                sprintf(buf, "%s \n", mymsg.text);
+                sprintf(buf, "%s", mymsg.text);
                 write(logfd, buf, strlen(buf));
 
             } 
@@ -78,26 +78,25 @@ int main() {
         char prompt[] = "Enter a two-digit number: ";
         write(1, prompt, strlen(prompt));
         read(0,buf, 3);
+        buf[2] = '\0';
         memset(mymsg.text, 0, 100);
 
         int number = atoi(buf);
         *shared = number;
+        fprintf(myinput, "%2d\n", number);
         char prompt2[] = "Enter a word: ";
         write(1, prompt2 ,strlen(prompt2)); 
         read(0, mymsg.text, 20);
         mymsg.type = 1;
         msgsnd(mqid, &mymsg, sizeof(mymsg), 0);
-        fscanf(myinput, "%2d", &number);
-        fscanf(myinput, "%s", mymsg.text);
-        fclose(myinput);
+        fprintf(myinput, "%s", mymsg.text);
         wait(&status);
         printf("my child exited with exit code: %i \n", WEXITSTATUS(status));
-
+        fprintf(myinput, "my child exited with exit code: %i ", WEXITSTATUS(status));
+        fclose(myinput);
         shmdt(shared);
         msgctl(mqid, IPC_RMID, NULL);
         shmctl(shmid, IPC_RMID, NULL);
     }
-
-
     return 0;
 }
