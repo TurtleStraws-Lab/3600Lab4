@@ -38,7 +38,9 @@
 #include <X11/keysym.h>
 #include <unistd.h>
 
-char moises[200];
+char moises[200] = "Parent Window.";
+char child[200] = "Press C for child window.";
+char escape[200] = "Press Esc to exit";
 struct Global {
     Display *dpy;
     Window win;
@@ -166,10 +168,12 @@ void render(void)
     /* Nothing being rendered yet. */
 XSetForeground(g.dpy, g.gc, 0xFFC72C);  // Found the information at https://teamcolorcodes.com/csub-roadrunners-color-codes/ 
 XFillRectangle(g.dpy, g.win, g.gc, 0, 0, g.xres, g.yres);
-//sprintf(str, "m", moises);
-//ssize_t write(int fd, const void *buf, size_t count);
 
 
+XSetForeground(g.dpy, g.gc, 0x000000);  
+drawString(10, 20, moises);
+drawString(10, 40, child);
+drawString(10, 60, escape);
 }
 
 
