@@ -37,10 +37,14 @@
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <unistd.h>
+#include <signal.h>
 
-char moises[200] = "Parent Window.";
-char child[200] = "Press C for child window.";
-char escape[200] = "Press Esc to exit";
+int child = 0;
+unsigned int bcolor;
+pid_t cpid;
+int nchild = 0;
+
+
 struct Global {
     Display *dpy;
     Window win;
@@ -56,10 +60,24 @@ void drawString(int left, int top, char *str);
 int check_keys(XEvent *e);
 void render(void);
 
-int main(void)
+void handler(int sig)
 {
+bcolor = rand();
+render();
+}
+
+int main(int argc, char *argv[])
+{
+    int counter = 0;
+    if (argc > 1)
+        counter = atoi(argv[1]);
     XEvent e;
     int done = 0;
+
+    if (child) {
+        bcolor = 0x00ff9900;
+        signal(SIGUSR1, handler);
+    }
     x11_init_xwindows();
     while (!done) {
         /* Check the event queue */
@@ -70,6 +88,13 @@ int main(void)
             render();
         }
         usleep(4000);
+        if (counter > 0) {
+            --counter;
+            if (counter == 0)
+                done = 1;
+                
+
+        }
     }
     x11_cleanup_xwindows();
     return 0;
@@ -107,6 +132,7 @@ void x11_init_xwindows(void)
                                 PointerMotionMask | ButtonPressMask |
                                 ButtonReleaseMask | KeyPressMask);
 }
+
 
 void check_mouse(XEvent *e)
 {
@@ -146,20 +172,27 @@ int check_keys(XEvent *e)
         switch (key) {
             case XK_1:
                 break;
+            case XK_a:
+                if (!child)
+                kill(cpid, SIGUSR1);
+                break;
             case XK_c:
                 {
-                //create a child window
                 pid_t pid = fork();
-                if (pid == 0) {
-                    main();
-                    exit(0);
-                    }
+                if (pid == 0){
+                child = 1;
+                main(0, NULL);
+                exit(0);
+                } else {
+                  cpid = pid;
+                }   
                 }
+                
                 break;
             case XK_Escape:
                 return 1;
         }
-    }
+    } 
     return 0;
 }
 
@@ -169,11 +202,8 @@ void render(void)
 XSetForeground(g.dpy, g.gc, 0xFFC72C);  // Found the information at https://teamcolorcodes.com/csub-roadrunners-color-codes/ 
 XFillRectangle(g.dpy, g.win, g.gc, 0, 0, g.xres, g.yres);
 
-
-XSetForeground(g.dpy, g.gc, 0x000000);  
-drawString(10, 20, moises);
-drawString(10, 40, child);
-drawString(10, 60, escape);
+//XSetForeground(g.dpy, g.gc, 0x00ff9900);  
+//drawString(10, 20, "Parent Window");
 }
 
 
