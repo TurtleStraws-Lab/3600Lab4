@@ -68,8 +68,8 @@ render();
 
 void handler2(int sig2)
 {
-if(child){
-drawString(10, 80, "Press C for child window.");
+if(!child){
+drawString(10, 80, "Press A to change color");
 render();
 }
 }
@@ -84,7 +84,6 @@ int main(int argc, char *argv[])
 
     if (child) {
         bcolor = 0x00ff9900;
-        signal(SIGUSR2, handler2);
         signal(SIGUSR1, handler);
     }
     else{
@@ -198,7 +197,7 @@ int check_keys(XEvent *e)
                 exit(0);
                 } else {
                   cpid = pid;
-
+                  kill(cpid, SIGUSR2);
                 }   
                 }
                 
@@ -216,7 +215,7 @@ void render(void)
 XSetForeground(g.dpy, g.gc, bcolor);  // Found the information at https://teamcolorcodes.com/csub-roadrunners-color-codes/ 
 XFillRectangle(g.dpy, g.win, g.gc, 0, 0, g.xres, g.yres);
 
-   XSetForeground(g.dpy, g.gc, 0x00ff9900); 
+   XSetForeground(g.dpy, g.gc, 0x000000); 
   if (!child) { 
     drawString(10, 20, "Parent Window");
     drawString(10, 40, "Press C for child window.");
