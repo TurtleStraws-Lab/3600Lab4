@@ -66,6 +66,14 @@ bcolor = rand();
 render();
 }
 
+void handler2(int sig2)
+{
+if(child){
+drawString(10, 80, "Press C for child window.");
+render();
+}
+}
+
 int main(int argc, char *argv[])
 {
     int counter = 0;
@@ -76,7 +84,12 @@ int main(int argc, char *argv[])
 
     if (child) {
         bcolor = 0x00ff9900;
+        signal(SIGUSR2, handler2);
         signal(SIGUSR1, handler);
+    }
+    else{
+    bcolor = 0x00ff0000;
+
     }
     x11_init_xwindows();
     while (!done) {
@@ -185,6 +198,7 @@ int check_keys(XEvent *e)
                 exit(0);
                 } else {
                   cpid = pid;
+
                 }   
                 }
                 
@@ -199,12 +213,20 @@ int check_keys(XEvent *e)
 void render(void)
 {
     /* Nothing being rendered yet. */
-XSetForeground(g.dpy, g.gc, 0xFFC72C);  // Found the information at https://teamcolorcodes.com/csub-roadrunners-color-codes/ 
+XSetForeground(g.dpy, g.gc, bcolor);  // Found the information at https://teamcolorcodes.com/csub-roadrunners-color-codes/ 
 XFillRectangle(g.dpy, g.win, g.gc, 0, 0, g.xres, g.yres);
 
-//XSetForeground(g.dpy, g.gc, 0x00ff9900);  
-//drawString(10, 20, "Parent Window");
-}
+   XSetForeground(g.dpy, g.gc, 0x00ff9900); 
+  if (!child) { 
+    drawString(10, 20, "Parent Window");
+    drawString(10, 40, "Press C for child window.");
+    drawString(10, 60, "Press Esc to exit.");
+  } else{
+    XSetForeground(g.dpy, g.gc, 0x0000000); 
+    drawString(10, 30, "Hello. I'm the child!"); 
+
+  }
+  }
 
 
 
