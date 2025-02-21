@@ -68,10 +68,7 @@ render();
 
 void handler2(int sig2)
 {
-if(!child){
-drawString(10, 80, "Press A to change color");
-render();
-}
+return 1;
 }
 
 int main(int argc, char *argv[])
@@ -88,7 +85,6 @@ int main(int argc, char *argv[])
     }
     else{
     bcolor = 0x00ff0000;
-
     }
     x11_init_xwindows();
     while (!done) {
@@ -182,7 +178,9 @@ int check_keys(XEvent *e)
     key = XLookupKeysym(&e->xkey, 0);
     if (e->type == KeyPress) {
         switch (key) {
-            case XK_1:
+            case XK_b:
+                if(!child)
+                kill(cpid, SIGUSR2);
                 break;
             case XK_a:
                 if (!child)
@@ -197,7 +195,6 @@ int check_keys(XEvent *e)
                 exit(0);
                 } else {
                   cpid = pid;
-                  kill(cpid, SIGUSR2);
                 }   
                 }
                 
@@ -216,11 +213,18 @@ XSetForeground(g.dpy, g.gc, bcolor);  // Found the information at https://teamco
 XFillRectangle(g.dpy, g.win, g.gc, 0, 0, g.xres, g.yres);
 
    XSetForeground(g.dpy, g.gc, 0x000000); 
-  if (!child) { 
+  if(!child && cpid == 0) { 
     drawString(10, 20, "Parent Window");
     drawString(10, 40, "Press C for child window.");
     drawString(10, 60, "Press Esc to exit.");
-  } else{
+    } else if (!child && cpid != 0){
+     drawString(10, 20, "Parent Window");
+     drawString(10, 40, "A - change child's color.");
+     drawString(10, 70, "B - close child's window.");
+     XDrawRectangle(g.dpy, g.win, g.gc, 5,25, 180, 20);
+     XDrawRectangle(g.dpy, g.win, g.gc, 5,55, 180, 20);
+    } 
+    else{
     XSetForeground(g.dpy, g.gc, 0x0000000); 
     drawString(10, 30, "Hello. I'm the child!"); 
 
